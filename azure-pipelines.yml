@@ -1,17 +1,28 @@
-# HTML
-# Archive your static HTML project and save it with the build record.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
-- main
+- main  # Replace with the branch name you want to trigger the pipeline
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
 
 steps:
-- task: ArchiveFiles@2
+- task: UseNode@2
   inputs:
-    rootFolderOrFile: '$(build.sourcesDirectory)'
-    includeRootFolder: false
-- task: PublishBuildArtifacts@1
+    versionSpec: '16.x'
+  displayName: 'Install Node.js'
+
+- script: |
+    echo Installing dependencies...
+    npm install -g live-server
+  displayName: 'Install Live Server'
+
+- script: |
+    echo Starting the server to host HTML files...
+    live-server --port=8080 --host=0.0.0.0 --open=./index.html
+  displayName: 'Run HTML Project'
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: $(System.DefaultWorkingDirectory)
+    artifact: html-files
+    publishLocation: 'pipeline'
+  displayName: 'Publish HTML files'
